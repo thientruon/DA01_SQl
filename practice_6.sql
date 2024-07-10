@@ -90,6 +90,51 @@ ORDER BY month
 
         
 --Ex7
+SELECT product_id, year AS first_year, quantity, price
+FROM Sales
+WHERE (product_id, year) IN (
+    SELECT product_id, MIN(year) 
+    FROM Sales
+    GROUP BY product_id
+)
+
+--Ex8
+SELECT 
+    customer_id
+FROM customer 
+GROUP BY customer_id 
+HAVING COUNT (DISTINCT product_key) = (SELECT COUNT(DISTINCT product_key) FROM product)
+
+
+--Ex9
+SELECT employee_id
+FROM employees
+WHERE salary < 30000 AND manager_id NOT IN (SELECT employee_id FROM employees) 
+ORDER BY employee_id;
+
+
+--Ex11
+SELECT 
+    u.name
+FROM users u INNER JOIN movierating m
+ON u.user_id = m.user_id 
+WHERE m.rating IN (
+    SELECT 
+        u.user_id,
+        COUNT(rating)
+    FROM movierating
+    GROUP BY u.user_id 
+)
+
+-- SELECT 
+--     s.title
+-- FROM movies s INNER JOIN movierating m
+-- ON s.movie_id = m.movie_id
+-- WHERE m.rating >= (
+--     SELECT 
+--         MAX(rating)
+--     FROM movierating
+-- ) 
 
 
 
