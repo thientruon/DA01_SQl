@@ -46,23 +46,52 @@ FROM(
 
 --Ex5
 SELECT
-EXTRACT(month FROM event_date) as month,
-uses as monthly_active_users 
-FROM (SELECT
-        event_type,
-        user_id,
-        event_date,
-        COUNT(user_id) AS uses
-      FROM user_actions
-      WHERE (EXTRACT(month FROM event_date) = '7' OR EXTRACT(month FROM event_date) = '6')
-      AND EXTRACT(year FROM event_date) = 2022 
-      GROUP BY event_type, user_id, event_date
-      HAVING event_type IN ('sign-in', 'like', 'comment') 
-) AS tab
-GROUP BY EXTRACT(month FROM event_date), uses  
+    7 AS month,
+    COUNT(DISTINCT user_id) AS monthly_active_users
+FROM
+    user_actions
+WHERE
+    user_id IN (
+        SELECT DISTINCT user_id
+        FROM user_actions
+        WHERE EXTRACT(month FROM event_date) = 6
+          AND EXTRACT(year FROM event_date) = 2022
+          AND event_type IN ('sign-in', 'like', 'comment')
+    )
+    AND EXTRACT(month FROM event_date) = 7
+    AND EXTRACT(year FROM event_date) = 2022
+    AND event_type IN ('sign-in', 'like', 'comment'
 
 
 --Ex6
+WITH approved_transactions AS (
+    SELECT 
+        TO_CHAR(trans_date, 'YYYY-MM') as month,
+        country,
+        COUNT(state) as approved_count,
+        SUM(amount) as approved_total_amount
+    FROM transactions
+    WHERE state = 'approved'
+    GROUP BY country, TO_CHAR(trans_date, 'YYYY-MM')
+)
+SELECT 
+    TO_CHAR(trans_date, 'YYYY-MM') as month,
+    t.country,
+    COUNT(t.state) as trans_count,
+    COALESCE(at.approved_count,0) as approved_count,
+    SUM(t.amount) as trans_total_amount,
+    COALESCE(at.approved_total_amount,0) as approved_total_amount
+FROM transactions t 
+LEFT JOIN approved_transactions at
+ON t.country = at.country 
+AND TO_CHAR(trans_date, 'YYYY-MM') = at.month
+GROUP BY t.country, TO_CHAR(t.trans_date, 'YYYY-MM'), at.approved_count, at.approved_total_amount
+ORDER BY month
+
+        
+--Ex7
+
+
 
 
 
