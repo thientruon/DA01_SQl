@@ -139,3 +139,16 @@ FROM (
         LIMIT 1
     ) AS highest_rated_movie
 ) AS final_results;
+
+
+--Ex12
+
+
+
+
+
+
+
+
+
+
