@@ -114,31 +114,28 @@ ORDER BY employee_id;
 
 
 --Ex11
-SELECT 
-    u.name
-FROM users u INNER JOIN movierating m
-ON u.user_id = m.user_id 
-WHERE m.rating IN (
-    SELECT 
-        u.user_id,
-        COUNT(rating)
-    FROM movierating
-    GROUP BY u.user_id 
-)
+SELECT results
+FROM (
+    SELECT name AS results, 'user' AS type
+    FROM (
+        SELECT u.name, COUNT(*) AS num_ratings
+        FROM users u
+        JOIN movierating mr ON u.user_id = mr.user_id
+        GROUP BY u.user_id, u.name
+        ORDER BY num_ratings DESC, u.name ASC
+        LIMIT 1
+    ) AS max_rated_user
 
--- SELECT 
---     s.title
--- FROM movies s INNER JOIN movierating m
--- ON s.movie_id = m.movie_id
--- WHERE m.rating >= (
---     SELECT 
---         MAX(rating)
---     FROM movierating
--- ) 
+    UNION ALL
 
-
-
-
-
-
-
+    SELECT title AS results, 'movie' AS type
+    FROM (
+        SELECT m.movie_id, AVG(m.rating) AS avg_rating, MIN(s.title) AS title
+        FROM movierating m
+        JOIN movies s ON m.movie_id = s.movie_id
+        WHERE EXTRACT(month FROM m.created_at) = 2 AND EXTRACT(year FROM m.created_at) = 2020
+        GROUP BY m.movie_id
+        ORDER BY avg_rating DESC, title ASC
+        LIMIT 1
+    ) AS highest_rated_movie
+) AS final_results;
